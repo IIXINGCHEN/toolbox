@@ -108,7 +108,7 @@ class Index extends Base
         $list = [];
 
         $history = cookie('tools');
-        if(strlen($history)>0){
+        if(!empty($history)){
             $history = array_reverse(array_unique(explode(',',$history)));
             $tool = Db::name('plugin')->cache('plugins', self::CACHE_TIME)->field('id,title,alias,keyword,request_count,category_id,level')->where('enable', 1)->order('weight','desc')->select();
             $newtool = [];
