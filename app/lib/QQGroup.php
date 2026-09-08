@@ -14,7 +14,9 @@ class QQGroup{
 
 	public function __construct($uin, $cookie){
 		$this->uin=$uin;
-		preg_match('/skey=(.{10});/',$cookie,$skey);
+		if(!preg_match('/skey=(.{10})/',$cookie,$skey)){
+			throw new Exception('Cookie中缺少skey');
+		}
 		$this->gtk=$this->getGTK($skey[1]);
 		$this->cookie=$cookie;
 	}

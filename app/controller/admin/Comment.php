@@ -22,8 +22,10 @@ class Comment extends Base
             return msg('error', $validate->getError());
         }
         
-        $page = intval($params['page']);
-        $limit = intval($params['limit']);
+        $page = isset($params['page']) ? intval($params['page']) : 1;
+        $limit = isset($params['limit']) ? intval($params['limit']) : 50;
+        if($page < 1) $page = 1;
+        if($limit < 1) $limit = 50;
 
         $select = Db::name('comment');
         if(!empty($params['uid'])){
@@ -119,8 +121,10 @@ class Comment extends Base
             return msg('error', $validate->getError());
         }
         
-        $page = intval($params['page']);
-        $limit = intval($params['limit']);
+        $page = isset($params['page']) ? intval($params['page']) : 1;
+        $limit = isset($params['limit']) ? intval($params['limit']) : 50;
+        if($page < 1) $page = 1;
+        if($limit < 1) $limit = 50;
 
         $select = Db::name('uploadlog');
         if(!empty($params['uid'])){

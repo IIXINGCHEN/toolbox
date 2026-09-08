@@ -28,7 +28,7 @@ abstract class Plugin
     public function alert($code, $msg = '', $url = null, $wait = 3)
     {
         if ($url) {
-            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : (string)$this->app->route->buildUrl($url);
+            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : '/' . ltrim((string)$url, '/');
         }
         if(empty($msg)) $msg = '未知错误';
         

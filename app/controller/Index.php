@@ -52,15 +52,15 @@ class Index extends Base
             if(empty($do) || empty($id)) return msg('error', 'param error');
             $plugin = Db::name('plugin')->where('id', $id)->where('enable',1)->find();
             if(!$plugin) return msg('error', '工具不存在');
-            $stars = explode(',',request()->user['stars']);
-            if ($do == 'add' && !in_array($id, $stars)) {
+            $stars = array_values(array_filter(explode(',', (string)(request()->user['stars'] ?? '')), 'strlen'));
+            if ($do == 'add' && !in_array($id, $stars) && !in_array((string)$id, $stars)) {
                 array_push($stars, $id);
             } elseif ($do == 'del') {
-                if (($key = array_search($id, $stars)) !== false) {
-                    unset($stars[$key]);
-                }
+                $stars = array_values(array_filter($stars, function($item) use ($id) {
+                    return (string)$item !== (string)$id;
+                }));
             }
-            $stars = implode(',', array_unique(array_values($stars)));
+            $stars = implode(',', array_unique($stars));
             Db::name('user')->where('id', $uid)->update(['stars'=>$stars]);
             return msg('ok', $do == 'add' ? '添加收藏成功！' : '取消收藏成功！');
         }
@@ -72,7 +72,7 @@ class Index extends Base
         $category = Db::name('category')->cache('categorys', self::CACHE_TIME)->field('id,title,icon')->where('enable', 1)->order('weight','desc')->select();
         $list = [];
 
-        $stars = request()->user['stars'];
+        $stars = request()->user['stars'] ?? '';
         if(strlen($stars)>0){
             $stars = explode(',',$stars);
             $tool = Db::name('plugin')->cache('plugins', self::CACHE_TIME)->field('id,title,alias,keyword,request_count,category_id,level')->where('enable', 1)->order('weight','desc')->select();
@@ -170,10 +170,16 @@ class Index extends Base
                 Db::name('comment')->insert($data);
                 return msg();
             }else{
-                $page = input('get.page/d');
+                $page = input('get.page/d', 1);
+                if($page < 1) $page = 1;
                 $limit = 5;
                 $uid = request()->islogin ? request()->user['id'] : 0;
-                $select = Db::name('comment')->alias('A')->leftJoin('user B', 'A.uid=B.id')->field('A.id,A.uid,content,reply,A.enable,A.create_time,A.update_time,B.username,B.avatar_url')->where('A.enable', 1)->whereOr('A.uid', $uid);
+                $select = Db::name('comment')->alias('A')->leftJoin('user B', 'A.uid=B.id')->field('A.id,A.uid,content,reply,A.enable,A.create_time,A.update_time,B.username,B.avatar_url')->where(function($query) use ($uid) {
+                    $query->where('A.enable', 1);
+                    if($uid){
+                        $query->whereOr('A.uid', $uid);
+                    }
+                });
                 $total = $select->count();
                 $comment = $select->order('id','desc')->page($page, $limit)->select();
                 $items = [];
@@ -216,7 +222,7 @@ class Index extends Base
         }
         $history[] = $id;
         if(count($history) > 20){
-            $history = array_splice($history, 0, 20);
+            $history = array_slice($history, -20);
         }
         cookie('tools', implode(',', $history));
 

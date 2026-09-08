@@ -98,7 +98,7 @@ new Vue({
     mounted() {
         var that=this;
         initGeetest4({
-            captchaId: "54088bb07d2df3c46b79f80300b0abbe",
+            captchaId: "{:config_get('captcha_id', '54088bb07d2df3c46b79f80300b0abbe')}",
             product: 'bind',
             protocol: 'https://',
             riskType: 'slide',

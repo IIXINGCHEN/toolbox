@@ -17,7 +17,7 @@ class Auth extends Base
         if(request()->islogin) {
             return $this->alert('success', '已登录', '/');
         }
-        View::assign(['is_qq'=>config_get('oauth_openqq'), 'is_wx'=>config_get('oauth_openxw')]);
+        View::assign(['is_qq'=>config_get('oauth_openqq'), 'is_wx'=>config_get('oauth_openwx')]);
         return view();
     }
 
@@ -114,9 +114,12 @@ class Auth extends Base
 
     public function logout()
     {
-        //session(null);
         cookie('user_token', null);
-        return redirect(request()->header('referer') ?? '/');
+        $referer = request()->header('referer');
+        if($referer && checkRefererHost()){
+            return redirect($referer);
+        }
+        return redirect('/');
     }
 
     public function verifycode()
@@ -162,12 +165,13 @@ class Auth extends Base
         }
 
         $login = new \app\lib\QQLogin();
+        $array = ['saveOK'=>1, 'msg'=>'未知操作'];
         if($do == 'getqrpic'){
             $array = $login->getqrpic($info[0]);
         }
         elseif($do == 'qrlogin'){
             $array = $login->qrlogin($info[0], $info[1], input('get.qrsig'));
-            if($array['saveOK'] == 0){
+            if(isset($array['saveOK']) && $array['saveOK'] == 0){
                 $cookie = ['uin' => $array['uin'], 'cookie' => $array['cookie'], 'nickname' => $array['nickname']];
                 session('qq_cookie_'.$type, $cookie);
             }

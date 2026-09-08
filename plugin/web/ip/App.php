@@ -45,7 +45,7 @@ class App extends Plugin
                 return msg('error', '未查询到该域名的解析记录');
             }
         }
-        $ipnum = bindec(decbin(ip2long($ip)));
+        $ipnum = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? sprintf('%u', ip2long($ip)) : '';
         
         if(self::CACHE_TIME > 0){
             $cache = Db::name('querycache')->where('type', 'ip')->where('key', $apitype.'-'.$ip)->find();

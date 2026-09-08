@@ -163,7 +163,7 @@ class GeetestLib
 
     public function gt4_validate($captcha_id, $lot_number, $pass_token, $gen_time, $captcha_output)
     {
-        if (!empty($this->geetest_id) && !empty($this->geetest_key)) {
+        if (!empty($this->geetest_id) && !empty($this->geetest_key) && $this->geetest_id == $captcha_id) {
             return $this->gt4_validate_api($captcha_id, $lot_number, $pass_token, $gen_time, $captcha_output);
         } else {
             return $this->gt4_validate_demo($captcha_id, $lot_number, $pass_token, $gen_time, $captcha_output);
@@ -203,8 +203,9 @@ class GeetestLib
             'captcha_output' => $captcha_output
         ];
         $referer = 'http://gt4.geetest.com/demov4/invisible-bind-zh.html';
-        $httpheader[] = "X-Real-IP: " . request()->clientip;
-        $httpheader[] = "X-Forwarded-For: " . request()->clientip;
+        $real_ip = real_ip();
+        $httpheader[] = "X-Real-IP: " . $real_ip;
+        $httpheader[] = "X-Forwarded-For: " . $real_ip;
         $data = get_curl($url . '?' . http_build_query($param), 0, $referer, 0, 0, 0, 0, $httpheader);
         if ($data) {
             $arr = json_decode($data, true);

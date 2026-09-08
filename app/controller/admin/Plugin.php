@@ -161,7 +161,18 @@ class Plugin extends BaseController
             return msg('error', $validate->getError());
         }
 
-        Db::name('plugin')->cache('plugins')->where('id', $params['id'])->update($params);
+        $update = [];
+        if(isset($params['enable'])){
+            $update['enable'] = intval($params['enable']);
+        }
+        if(isset($params['category_id'])){
+            $update['category_id'] = intval($params['category_id']);
+        }
+        if(empty($update)){
+            return msg('error', 'param error');
+        }
+
+        Db::name('plugin')->cache('plugins')->where('id', $params['id'])->update($update);
         return msg();
     }
 

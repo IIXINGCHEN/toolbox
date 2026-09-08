@@ -56,7 +56,7 @@ class App extends Plugin
         elseif(strpos($url, '.kuaishou.com/')){
             return 'kuaishou';
         }
-        elseif(strpos($url, '.xiaohongshu.com/') || strpos($url, 'xhslink.com/')){
+        elseif(strpos($url, '.xiaohongshu.com/') || strpos($url, 'xhslink.com/') || strpos($url, 'xhslink.cn/')){
             return 'xiaohongshu';
         }
         elseif(strpos($url, 'toutiao.com/')){

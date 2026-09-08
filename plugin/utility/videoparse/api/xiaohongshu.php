@@ -9,7 +9,7 @@ use plugin\utility\videoparse\api;
 class xiaohongshu implements api
 {
     public function parse($url){
-        if(strpos($url, 'xhslink.com/')){
+        if(strpos($url, 'xhslink.com/') || strpos($url, 'xhslink.cn/')){
             $url = get_location_url($url);
             if(!$url || !strpos($url, 'xiaohongshu.com/')){
                 throw new Exception('短链接解析失败');

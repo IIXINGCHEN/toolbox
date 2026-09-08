@@ -63,11 +63,17 @@ class App extends Plugin
     {
         // 生成公钥私钥资源
         $res = openssl_pkey_new($this->config);
+        if(!$res){
+            return msg('error', '密钥生成失败');
+        }
         $privateKey = '';
         // 导出私钥
         openssl_pkey_export($res, $privateKey, $this->passPhrase, $this->config);
         //  导出公钥
         $pubKey = openssl_pkey_get_details($res);
+        if(!$pubKey || empty($pubKey['key'])){
+            return msg('error', '公钥导出失败');
+        }
         openssl_pkey_free($res);
 
         return msg('ok', 'success', [

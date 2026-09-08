@@ -33,7 +33,6 @@ class App extends Plugin
     public function getdata(){
         $url = input('post.url', null, 'trim');
         $ua = input('post.ua');
-        $useragent = $ua == 'diy' ? input('post.uastr', null, 'trim') : self::ualist[$ua];
         $referer = input('post.referer', null, 'trim');
         $post = input('post.post');
         $cookie = input('post.cookie');
@@ -41,6 +40,13 @@ class App extends Plugin
         if(!$url) return msg('error','no url');
         if(!filter_var($url,FILTER_VALIDATE_URL)){
             return msg('error','输入的URL不符合规范');
+        }
+        if($ua == 'diy'){
+            $useragent = input('post.uastr', null, 'trim');
+        }elseif(isset(self::ualist[$ua])){
+            $useragent = self::ualist[$ua];
+        }else{
+            return msg('error','UA类型不正确');
         }
 
         $captcha_result = verify_captcha4();
@@ -58,6 +64,7 @@ class App extends Plugin
         if(!empty($post) && substr($post, 0, 1) == '{' && substr($post, -1 ,1) == '}'){
             $httpheader[] = "Content-Type: application/json; charset=utf-8";
         }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $httpheader);
         curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
         if(input('post.header')=='1'){
             curl_setopt($ch, CURLOPT_HEADER, true);

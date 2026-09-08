@@ -37,8 +37,7 @@ class ValidateService extends \think\Service
                 if (!is_string($value)){
                     return false;
                 }
-                $arr = explode('\\', $value);
-                return count($arr) === 2;
+                return (bool)preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*\\\\[a-zA-Z_][a-zA-Z0-9_]*$/', $value);
             });
         });
     }

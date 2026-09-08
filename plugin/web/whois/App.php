@@ -29,11 +29,10 @@ class App extends Plugin
         $domain = input('post.domain', null, 'trim');
         if(!$domain) return msg('error','no domain');
         if(filter_var($domain, FILTER_VALIDATE_IP)){
-            $type = 'ip';
-        }elseif(checkdomain($domain)){
-            $type = 'domain';
-        }else{
-            return msg('error', '域名或IP格式不正确！');
+            return msg('error', '暂不支持查询IP的Whois信息');
+        }
+        if(!checkdomain($domain)){
+            return msg('error', '域名格式不正确！');
         }
 
         $captcha_result = verify_captcha4();

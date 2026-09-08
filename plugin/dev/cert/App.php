@@ -45,30 +45,34 @@ class App extends Plugin
         if(!$arr){
             return msg('error', '证书文件错误');
         }
-        $pkey_detail = openssl_pkey_get_details(openssl_pkey_get_public($cert));
+        $pkey_res = openssl_pkey_get_public($cert);
+        $pkey_detail = $pkey_res ? openssl_pkey_get_details($pkey_res) : false;
+        if(!$pkey_detail){
+            $pkey_detail = ['type' => null, 'bits' => ''];
+        }
 
         $subject_info = [
-            '通用名称(CN)' => $this->format($arr['subject']['CN']),
-            '国家(C)' => $this->format($arr['subject']['C']),
-            '省份(S)' => $this->format($arr['subject']['ST']),
-            '城市(L)' => $this->format($arr['subject']['L']),
-            '组织(O)' => $this->format($arr['subject']['O']),
-            '部门(OU)' => $this->format($arr['subject']['OU']),
+            '通用名称(CN)' => $this->format($arr['subject']['CN'] ?? null),
+            '国家(C)' => $this->format($arr['subject']['C'] ?? null),
+            '省份(S)' => $this->format($arr['subject']['ST'] ?? null),
+            '城市(L)' => $this->format($arr['subject']['L'] ?? null),
+            '组织(O)' => $this->format($arr['subject']['O'] ?? null),
+            '部门(OU)' => $this->format($arr['subject']['OU'] ?? null),
         ];
         $issuer_info = [
-            '通用名称(CN)' => $this->format($arr['issuer']['CN']),
-            '国家(C)' => $this->format($arr['issuer']['C']),
-            '组织(O)' => $this->format($arr['issuer']['O']),
+            '通用名称(CN)' => $this->format($arr['issuer']['CN'] ?? null),
+            '国家(C)' => $this->format($arr['issuer']['C'] ?? null),
+            '组织(O)' => $this->format($arr['issuer']['O'] ?? null),
         ];
         $cert_info = [
-            '序列号' => $arr['serialNumberHex'],
-            '签名算法' => $arr['signatureTypeSN'],
-            '密钥类型' => isset(self::$key_type[$pkey_detail['type']]) ? self::$key_type[$pkey_detail['type']] : '未知',
-            '密钥强度' => $pkey_detail['bits'],
-            '颁发时间' => date('Y-m-d H:i:s', $arr['validFrom_time_t']),
-            '过期时间' => date('Y-m-d H:i:s', $arr['validTo_time_t']),
-            '有效期' => round(($arr['validTo_time_t']-time()) / 3600 / 24).'天',
-            '备用名' => $arr['extensions']['subjectAltName'],
+            '序列号' => $arr['serialNumberHex'] ?? '',
+            '签名算法' => $arr['signatureTypeSN'] ?? '',
+            '密钥类型' => isset($pkey_detail['type']) && isset(self::$key_type[$pkey_detail['type']]) ? self::$key_type[$pkey_detail['type']] : '未知',
+            '密钥强度' => $pkey_detail['bits'] ?? '',
+            '颁发时间' => isset($arr['validFrom_time_t']) ? date('Y-m-d H:i:s', $arr['validFrom_time_t']) : '',
+            '过期时间' => isset($arr['validTo_time_t']) ? date('Y-m-d H:i:s', $arr['validTo_time_t']) : '',
+            '有效期' => isset($arr['validTo_time_t']) ? round(($arr['validTo_time_t']-time()) / 3600 / 24).'天' : '',
+            '备用名' => $arr['extensions']['subjectAltName'] ?? '',
         ];
 
         return msg('ok','success',['subject_info'=>$subject_info, 'issuer_info'=>$issuer_info, 'cert_info'=>$cert_info]);

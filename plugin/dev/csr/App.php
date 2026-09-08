@@ -29,17 +29,21 @@ class App extends Plugin
             return msg('error', 'CSR文件错误');
         }
 
-        $pkey_detail = openssl_pkey_get_details(openssl_csr_get_public_key($csr));
+        $pkey_res = openssl_csr_get_public_key($csr);
+        $pkey_detail = $pkey_res ? openssl_pkey_get_details($pkey_res) : false;
+        if(!$pkey_detail){
+            $pkey_detail = ['type' => null, 'bits' => ''];
+        }
 
         $info = [
-            '通用名称(CN)' => $this->format($subject_info['CN']),
-            '国家(C)' => $this->format($subject_info['C']),
-            '省份(S)' => $this->format($subject_info['ST']),
-            '城市(L)' => $this->format($subject_info['L']),
-            '组织(O)' => $this->format($subject_info['O']),
-            '部门(OU)' => $this->format($subject_info['OU']),
-            '密钥类型' => isset(self::$key_type[$pkey_detail['type']]) ? self::$key_type[$pkey_detail['type']] : '未知',
-            '密钥强度' => $pkey_detail['bits'],
+            '通用名称(CN)' => $this->format($subject_info['CN'] ?? null),
+            '国家(C)' => $this->format($subject_info['C'] ?? null),
+            '省份(S)' => $this->format($subject_info['ST'] ?? null),
+            '城市(L)' => $this->format($subject_info['L'] ?? null),
+            '组织(O)' => $this->format($subject_info['O'] ?? null),
+            '部门(OU)' => $this->format($subject_info['OU'] ?? null),
+            '密钥类型' => isset($pkey_detail['type']) && isset(self::$key_type[$pkey_detail['type']]) ? self::$key_type[$pkey_detail['type']] : '未知',
+            '密钥强度' => $pkey_detail['bits'] ?? '',
         ];
 
         return msg('ok','success',['info'=>$info]);

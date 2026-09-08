@@ -36,8 +36,8 @@ function plugin_info_get($alias = '')
     if(!plugin_userlevel($plugin['level'])) return null;
     $plugin['is_star'] = 0;
     if(request()->islogin){
-        $stars = explode(',', request()->user['stars'] ?? '');
-        if(in_array($plugin['id'], $stars)){
+        $stars = array_filter(explode(',', (string)(request()->user['stars'] ?? '')), 'strlen');
+        if(in_array($plugin['id'], $stars) || in_array((string)$plugin['id'], $stars)){
             $plugin['is_star'] = 1;
         }
     }
@@ -293,7 +293,7 @@ function del_tree($dir)
 function config_get($key, $default = null)
 {
     $value = config('sys.'.$key);
-    return $value ?: $default;
+    return ($value === null || $value === '') ? $default : $value;
 }
 
 function config_set($key, $value)
@@ -417,38 +417,14 @@ function verify_captcha(){
 //极验4.0服务端验证（无感）
 function verify_captcha4(){
     if(!input('?post.captcha_id') || !input('?post.lot_number') || !input('?post.pass_token') || !input('?post.gen_time') || !input('?post.captcha_output')) return false;
-    $real_ip = real_ip();
-    $url = 'http://gt4.geetest.com/demov4/demo/login';
-    $param = ['captcha_id'=>input('post.captcha_id'), 'lot_number'=>input('post.lot_number'), 'pass_token'=>input('post.pass_token'), 'gen_time'=>input('post.gen_time'), 'captcha_output'=>input('post.captcha_output')];
-    $referer = 'http://gt4.geetest.com/demov4/invisible-bind-zh.html';
-    $httpheader[] = "X-Real-IP: ".$real_ip;
-	$httpheader[] = "X-Forwarded-For: ".$real_ip;
-    $data = get_curl($url.'?'.http_build_query($param),0,$referer,0,0,0,0,$httpheader);
-    $arr = json_decode($data, true);
-    if(isset($arr['result']) && $arr['result'] == 'success'){
-        return true;
-    }
-    return false;
+    $GtSdk = new \app\lib\GeetestLib(config_get('captcha_id'), config_get('captcha_key'));
+    return $GtSdk->gt4_validate(input('post.captcha_id'), input('post.lot_number'), input('post.pass_token'), input('post.gen_time'), input('post.captcha_output'));
 }
 
 //极验4.0服务端验证（滑动）
 function verify_captcha4_slide(){
-    return verify_captcha4();
-    if(!input('?post.captcha_id') || !input('?post.lot_number') || !input('?post.pass_token') || !input('?post.gen_time') || !input('?post.captcha_output')) return false;
-    $url = 'http://gcaptcha4.geetest.com/validate?captcha_id='.input('post.captcha_id');
-    $param = ['lot_number'=>input('post.lot_number'), 'pass_token'=>input('post.pass_token'), 'gen_time'=>input('post.gen_time'), 'captcha_output'=>input('post.captcha_output')];
-    $param['sign_token'] = hash_hmac('sha256', $param['lot_number'], config_get('captcha_key'));
-    $data = get_curl($url, http_build_query($param));
-    $arr = json_decode($data, true);
-    if(isset($arr['status']) && $arr['status']=='success'){
-        if(isset($arr['result']) && $arr['result'] == 'success'){
-            return true;
-        }else{
-            return '验证失败，'.$arr['reason'];
-        }
-    }else{
-        return '验证失败，'.($arr['msg']?$arr['msg']:'请重新验证');
-    }
+    $result = verify_captcha4();
+    return $result === true ? true : '验证失败，请重新验证';
 }
 
 function checkdomain($domain){
@@ -468,10 +444,10 @@ function checkdomain($domain){
 function getSubstr($str, $leftStr, $rightStr)
 {
 	$left = strpos($str, $leftStr);
+	if($left === false) return '';
 	$start = $left+strlen($leftStr);
 	$right = strpos($str, $rightStr, $start);
-	if($left < 0) return '';
-	if($right>0){
+	if($right !== false){
 		return substr($str, $start, $right-$start);
 	}else{
 		return substr($str, $start);
@@ -489,7 +465,8 @@ function plugin_userlevel($level){
 function checkRefererHost(){
     if(!request()->header('referer'))return false;
     $url_arr = parse_url(request()->header('referer'));
+    if(empty($url_arr['host'])) return false;
     $http_host = request()->header('host');
-    if(strpos($http_host,':'))$http_host = substr($http_host, 0, strpos($http_host, ':'));
+    if($http_host && strpos($http_host,':'))$http_host = substr($http_host, 0, strpos($http_host, ':'));
     return $url_arr['host'] === $http_host;
 }

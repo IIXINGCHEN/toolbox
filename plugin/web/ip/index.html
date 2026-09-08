@@ -57,7 +57,6 @@
                 IP138：查询准确性<span class="text-danger">极高</span>，部分精确到县，速度快，含运营商<span class="text-success">（支持IPv6）</span><br/>
                 高德地图：查询准确性<span class="text-danger">极高</span>，部分精确到县，速度快，含运营商、经纬度<span class="text-success">（支持IPv6）</span><br/>
                 腾讯地图：宽带IP的查询准确性<span class="text-danger">较高</span>，部分精确到县，IDC的IP不准确，速度快<span class="text-success">（支持IPv6）</span><br/>
-                太平洋电脑网：查询准确性<span class="text-danger">较高</span>，速度快，含运营商<span class="text-success">（支持IPv6）</span><br/>
                 IPIP：查询准确性<span class="text-danger">极高</span>，速度快，含运营商、AS号<span class="text-success">（支持IPv6）</span><br/>
                 IP-API：国外IP查询准确性<span class="text-danger">较高</span>，国外接口延迟高，含运营商、AS号<span class="text-success">（支持IPv6）</span><br/>
                 宝塔：查询准确性<span class="text-danger">较高</span>，部分精确到县，速度快，含运营商、经纬度<br/>
@@ -84,21 +83,17 @@ new Vue({
         result_type: 'IP',
         showresult: false,
         apitypes: [
-            /*{
-                title: '高德地图',
-                key: 'amap'
-            },*/
             {
                 title: 'IP138',
                 key: 'ip138'
             },
             {
-                title: '腾讯地图',
-                key: 'tencent'
+                title: '高德地图',
+                key: 'amap'
             },
             {
-                title: '太平洋',
-                key: 'pconline'
+                title: '腾讯地图',
+                key: 'tencent'
             },
             {
                 title: 'IPIP',

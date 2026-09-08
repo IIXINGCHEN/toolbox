@@ -90,7 +90,7 @@ class XiaomiSport
         }elseif(isset($arr['code']) && $arr['code']==1){
             return true;
         }else{
-            throw new Exception('修改步数失败，'.isset($arr['message'])?$arr['message']:$response['body']);
+            throw new Exception('修改步数失败，'.(isset($arr['message'])?$arr['message']:$response['body']));
         }
     }
 

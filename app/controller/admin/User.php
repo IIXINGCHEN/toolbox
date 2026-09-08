@@ -22,8 +22,10 @@ class User extends Base
             return msg('error', $validate->getError());
         }
 
-        $page = intval($params['page']);
-        $limit = intval($params['limit']);
+        $page = isset($params['page']) ? intval($params['page']) : 1;
+        $limit = isset($params['limit']) ? intval($params['limit']) : 50;
+        if($page < 1) $page = 1;
+        if($limit < 1) $limit = 50;
 
         $select = Db::name('user');
         if(!empty($params['id'])){
@@ -59,13 +61,15 @@ class User extends Base
 
         $validate = Validate::rule([
             'id' => 'require',
-            'enable' => 'integer'
+            'enable' => 'require|integer'
         ]);
         if (!$validate->check($params)) {
             return msg('error', $validate->getError());
         }
 
-        Db::name('user')->where('id', $params['id'])->update($params);
+        Db::name('user')->where('id', $params['id'])->update([
+            'enable' => intval($params['enable'])
+        ]);
         return msg();
     }
 

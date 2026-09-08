@@ -106,15 +106,15 @@ class Plugin
                 throw new Exception("插件缺失类$this->pluginClass,安装失败");
             }
             $install = new $class();
-            $model = Db::name('plugin')->where('class', $this->pluginClass)->find();
-            if (!$model) {
-                $model['title'] = '插件' . $this->uniqid;
-                $model['alias'] = $this->uniqid;
-                $model['class'] = $this->pluginClass;
-                $model['desc'] = '';
-                $model['category_id'] = 0;
-                $model['request_count'] = 0;
-            }
+            $exist = Db::name('plugin')->where('class', $this->pluginClass)->find();
+            $model = $exist ?: [
+                'title' => '插件' . $this->uniqid,
+                'alias' => $this->uniqid,
+                'class' => $this->pluginClass,
+                'desc' => '',
+                'category_id' => 0,
+                'request_count' => 0,
+            ];
             $pluginconfig = $install->Install();
             if(isset($pluginconfig['title'])) $model['title'] = $pluginconfig['title'];
             if(isset($pluginconfig['alias'])) $model['alias'] = $pluginconfig['alias'];
@@ -123,10 +123,19 @@ class Plugin
             
             //判断alias是否重复
             $model2 = Db::name('plugin')->where('alias', $model['alias'])->find();
-            if ($model2 && $model2['id'] !== $model['id']) {
+            if ($model2 && ($model2['id'] ?? null) !== ($model['id'] ?? null)) {
                 $model['alias'] .= "_$this->uniqid";
             }
-            $model['id'] = Db::name('plugin')->cache('plugins')->insertGetId($model);
+            if ($exist) {
+                $id = $exist['id'];
+                $update = $model;
+                unset($update['id']);
+                Db::name('plugin')->cache('plugins')->where('id', $id)->update($update);
+                $model['id'] = $id;
+            } else {
+                unset($model['id']);
+                $model['id'] = Db::name('plugin')->cache('plugins')->insertGetId($model);
+            }
         } catch (\Exception $e) {
             @del_tree($this->pluginPath);
             return msg('error', $e->getMessage());
